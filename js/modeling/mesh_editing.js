@@ -2212,14 +2212,30 @@ Mesh.selected.forEach(mesh => {
 
 		// 🔍 合并4个不重复的顶点（矩形的4个顶点）
 		const allVkeys = [...new Set([...tri1.faceVkeys, ...tri2.faceVkeys])];
-		if (allVkeys.length !== 4) return; // 合并后必须是4个顶点（矩形）
+		if (allVkeys.length !== 4) return;
 
-		// 🔍 按「逆时针顺序」排序顶点（确保UV计算正确，BlockBench矩形面顶点顺序规则）
-		// 思路：以共享边为基准，补全另外两个顶点，保持逆时针
-		const [vShared1, vShared2] = sharedVkeys;
-		const tri1UniqueVkey = tri1.faceVkeys.find(v => !sharedVkeys.includes(v));
-		const tri2UniqueVkey = tri2.faceVkeys.find(v => !sharedVkeys.includes(v));
-		const orderedVkeys = [vShared1, tri1UniqueVkey, vShared2, tri2UniqueVkey]; // 逆时针顺序
+		// 提取顶点坐标（用于判断方向）
+		const getVertexCoord = (vkey) => mesh.vertices[vkey];
+		const A = getVertexCoord(allVkeys[0]);
+		const B = getVertexCoord(allVkeys[1]);
+		const C = getVertexCoord(allVkeys[2]);
+
+		// 顶点顺序严格逆时针验证（保留之前的修复，确保面方向正确）
+		let orderedVkeys;
+		switch (direction) {
+			case 'east': case 'west':
+				const crossProduct_YZ = (B[1] - A[1]) * (C[2] - A[2]) - (B[2] - A[2]) * (C[1] - A[1]);
+				orderedVkeys = crossProduct_YZ < 0 ? [allVkeys[0], allVkeys[2], allVkeys[1], allVkeys[3]] : allVkeys;
+				break;
+			case 'up': case 'down':
+				const crossProduct_XZ = (B[0] - A[0]) * (C[2] - A[2]) - (B[2] - A[2]) * (C[0] - A[0]);
+				orderedVkeys = crossProduct_XZ < 0 ? [allVkeys[0], allVkeys[2], allVkeys[1], allVkeys[3]] : allVkeys;
+				break;
+			case 'south': case 'north':
+				const crossProduct_XY = (B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0]);
+				orderedVkeys = crossProduct_XY < 0 ? [allVkeys[0], allVkeys[2], allVkeys[1], allVkeys[3]] : allVkeys;
+				break;
+		}
 
 		// 🔍 合并UV数据（两个三角形的UV合并为矩形的4个顶点UV）
 		const mergedUv = {};
@@ -2242,7 +2258,7 @@ Mesh.selected.forEach(mesh => {
 		cubeFace.texture = texture;
 
 		// 2. 提取4个顶点的UV（此时vkeys是4个，无undefined）
-		const uvPoints = vkeys.map(vkey => uv[vkey]); // 顺序：[v0, v1, v2, v3]（逆时针）
+		const uvPoints = vkeys.map(vkey => uv[vkey]);
 
 		// 3. 修复UV范围计算（取真正的min/max，解决边长错误）
 		const uValues = uvPoints.map(p => p[0]);
@@ -2254,7 +2270,14 @@ Mesh.selected.forEach(mesh => {
 			Math.max(...vValues)  // 真正的maxV
 		];
 
-		// 4. 还原UV旋转（基于4个UV点，逻辑和原代码一致，但数据完整）
+		if (direction === 'up' || direction === 'down') {
+			// 交换 minU 和 maxU，实现 X 轴翻转（仅作用于面向竖直方向的纹理）
+			cubeFace.uv = [cubeFace.uv[2], cubeFace.uv[1], cubeFace.uv[0], cubeFace.uv[3]];
+		} else {
+			// 交换 minV 和 maxV，实现 Y 轴翻转（仅作用于面向水平方向的纹理）
+			cubeFace.uv = [cubeFace.uv[0], cubeFace.uv[3], cubeFace.uv[2], cubeFace.uv[1]];
+		}
+
 		const originalUvPoints = [
 			[cubeFace.uv[0], cubeFace.uv[1]],
 			[cubeFace.uv[2], cubeFace.uv[1]],
@@ -2265,9 +2288,7 @@ Mesh.selected.forEach(mesh => {
 		let rotationSteps = 0;
 		while (rotationSteps < 4) {
 			const rotated = [...originalUvPoints];
-			for (let i = 0; i < rotationSteps; i++) {
-				rotated.splice(0, 0, rotated.pop());
-			}
+			rotated.push(rotated.shift()); // 顺时针旋转（符合 BlockBench 规则）
 			const isMatch = rotated.every((p, idx) => 
 				Math.abs(p[0] - uvPoints[idx][0]) < 1e-6 && 
 				Math.abs(p[1] - uvPoints[idx][1]) < 1e-6
@@ -2275,7 +2296,7 @@ Mesh.selected.forEach(mesh => {
 			if (isMatch) break;
 			rotationSteps++;
 		}
-		cubeFace.rotation = rotationSteps * 90;
+		cubeFace.rotation = (rotationSteps * 90) % 360;
 	});
 
 	
