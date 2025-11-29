@@ -70,6 +70,7 @@
 		"selection_mode": null,
 		"create_face": {"key": 70},
 		"convert_to_mesh": null,
+		"convert_to_cube": null,
 		"invert_face": null,
 		"extrude_mesh_selection": {"key": 69},
 		"extrude_spline_selection": {"key": 69},

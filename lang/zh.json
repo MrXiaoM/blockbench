@@ -1292,6 +1292,8 @@
 	"action.create_face.desc": "在选中的顶点间新建面或边",
 	"action.convert_to_mesh": "转换成网格",
 	"action.convert_to_mesh.desc": "转换使选中的元素成网格",
+	"action.convert_to_cube": "转换成块",
+	"action.convert_to_cube.desc": "转换使选中的元素成块",
 	"action.invert_face": "反转面",
 	"action.invert_face.desc": "反转选中的面使其面向相反方向",
 	"action.extrude_mesh_selection": "拉伸选区",

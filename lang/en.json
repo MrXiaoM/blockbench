@@ -1770,6 +1770,8 @@
 	"action.create_face.desc": "Creates a new face or edge between the selected vertices",
 	"action.convert_to_mesh": "Convert to Mesh",
 	"action.convert_to_mesh.desc": "Convert the selected elements into meshes",
+	"action.convert_to_cube": "Convert to Cubes",
+	"action.convert_to_cube.desc": "Convert the selected elements into cubes",
 	"action.apply_mesh_rotation": "Apply Rotation",
 	"action.apply_mesh_rotation.desc": "Reset the element rotation of the mesh, and apply it to the geometry instead",
 	"action.apply_spline_rotation": "Apply Rotation",

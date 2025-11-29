@@ -976,6 +976,7 @@ export class Mesh extends OutlinerElement {
 		'calculate_vertex_weights',
 		new MenuSeparator('mesh_combination'),
 		'apply_mesh_rotation',
+		'convert_to_cube',
 		'split_mesh',
 		'merge_meshes',
 		...Outliner.control_menu_group,

@@ -317,6 +317,7 @@ export const MenuBar = {
 			'set_vertex_weights',
 			new MenuSeparator('element'),
 			'apply_mesh_rotation',
+			'convert_to_cube',
 			'split_mesh',
 			'merge_meshes',
 		], {icon: 'fa-gem', condition: {selected: {mesh: true}, modes: ['edit']}})
@@ -461,6 +462,7 @@ export const MenuBar = {
 			new MenuSeparator('tools'),
 			'predicate_overrides',
 			'convert_to_mesh',
+			'convert_to_cube',
 			'auto_set_cullfaces',
 			'remove_blank_faces',
 		], {icon: 'handyman'})
